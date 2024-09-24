@@ -1,28 +1,19 @@
-class Database:
-    def __init__(self):
-        self.users = {}
-        self.videos = {}
-
-    def add_user(self, username, password, age):
-        self.users[username] = password
-        self.users[username + '_age'] = age
-
-    def add_video(self, title, duration, time_now, adult_mode):
-            self.videos[title] = duration
-            self.videos['time_now_' + title] = time_now
-            self.videos['adult_mode_' + title] = adult_mode
-
-
-
-
-
-
+import  time
 
 class User:
     def __init__(self, nickname, password, age):
         self.nickname = nickname
-        self.password = hash(str(password))
+        self.password = password
         self.age = age
+
+    def __str__(self):
+        return f'{self.nickname}'
+
+    def __eq__(self, other):
+        return self.nickname == other.nickname
+
+    def __hash__(self):
+        return hash(self.password)
 
 
 class Video:
@@ -33,83 +24,90 @@ class Video:
         self.adult_mode = adult_mode
 
 class UrTube:
-    def __init__(self, users, videos, current_user):
-        self.users = users
-        self.videos = videos
-        self.current_user = current_user
+    # users = []
+    # videos = []
+    # current_user = None
+
+    def __init__(self):
+        self.users = []
+        self.videos = []
+        self.current_user = None
 
 
-    def log_in(self, nickname, password):
-        if  self.users[nickname] == hash(str(password)):
-            self.current_user = nickname
-            print(f'Текущий пользователь - {self.current_user}')
-        else:
-            print(f'Текущий пользователь не изменилось - {self.current_user}')
+    def log_in(self, login, password):
+        for user in self.users:
+            if login == user.nickname and password == user.password:
+                self.current_user = user
+
+
 
     def register(self, nickname, password, age):
-        if self.users.get(nickname) is None:
-            database.add_user(nickname, password, age)
-            print(f'Пользователь с именим {nickname} добавлено!')
+        for user in self.users:
+            if nickname in user.nickname:
+                print(f'Пользователь {nickname} уже существует')
+                break
         else:
-            print(f'Пользователь с именим {nickname} существует!')
+            user = User(nickname, password, age)
+            self.users.append(user)
+            self.log_out()
+            self.log_in(user.nickname, user.password)
 
     def log_out(self):
         self.current_user = None
-        print(self.current_user)
 
-    def add(self, title, duration, time_now = 0, adult_mode = False ):
-        if self.videos.get(title) is None:
-            database.add_video(title, duration, time_now, adult_mode)
+
+    def add(self, *args ):
+        for movie in args:
+            self.videos.append(movie)
+
+
+    def get_videos(self, text):
+        list_movie = []
+        for video in self.videos:
+            if text.upper() in video.title.upper():
+                list_movie.append(video.title)
+        return list_movie
+
+    def watch_video(self, movie):
+        if self.current_user and self.current_user.age < 18:
+            print('Вам нет 18 лет, пожалуйста покиньте страницу')
+        elif self.current_user:
+            for video in self.videos:
+                if movie in video.title:
+                    for i in range(1, 11):
+                        print(i, end = ' ')
+                        time.sleep(1)
+                    print('Конец видео')
         else:
-            print('Видео с таким именем существеут')
+            print('Войдите в аккаунт, чтобы смотреть видео')
 
-    def get_videos(self, title):
-        title1 = list(self.videos.keys())
-        for i  in range(0, len(title1)):
-            if title.lower() in title1[i].lower():
-                print(f'полученный фильм {title}')
+    def __str__(self):
+        return f"{self.videos}"
 
+if __name__ == '__main__':
+    ur = UrTube()
+    v1 = Video('Лучший язык программирования 2024 года', 200)
+    v2 = Video('Для чего девушкам парень программист?', 10, adult_mode=True)
 
+    # Добавление видео
+    ur.add(v1, v2)
 
+    # Проверка поиска
+    print(ur.get_videos('лучший'))
+    print(ur.get_videos('ПРОГ'))
+# Проверка на вход пользователя и возрастное ограничение
+    ur.watch_video('Для чего девушкам парень программист?')
+    ur.register('vasya_pupkin', 'lolkekcheburek', 13)
+    ur.watch_video('Для чего девушкам парень программист?')
+    ur.register('urban_pythonist', 'iScX4vIJClb9YQavjAgF', 25)
+    ur.watch_video('Для чего девушкам парень программист?')
 
+    # Проверка входа в другой аккаунт
+    ur.register('vasya_pupkin', 'F8098FM8fjm9jmi', 55)
+    print(ur.current_user)
 
-
-database = Database()
-
-user1 = User('gafurjan', 123, 40)
-user2 = User('gulguncha', 123, 30)
-user3 = User('muslima', 123456, 6)
-user4 = User('muhammadsadyk', 123, 4)
-
-database.add_user(user1.nickname, user1.password, user1.age)
-database.add_user(user2.nickname, user2.password, user2.age)
-database.add_user(user3.nickname, user3.password, user3.age)
-database.add_user(user4.nickname, user4.password, user4.age)
-
-
-video1 = Video('1+1', 36000)
-video2 = Video('Spartac', 36000)
-video3 = Video('Побег', 36000)
-
-database.add_video(video1.title, video1.duration, video1.time_now, video1.adult_mode)
-database.add_video(video2.title, video2.duration, video2.time_now, video2.adult_mode)
-database.add_video(video3.title, video3.duration, video3.time_now, video3.adult_mode)
-
-urtube = UrTube(database.users, database.videos, 'gafurjan')
-
-urtube.log_in('gafurjan', 123)
-
-# urtube.register('Gaffur', 1245, 41)
-
-urtube.log_out()
-
-urtube.add('Спрут', 3600)
-print(database.videos)
-
-urtube.get_videos('Спрут')
-
-
-
+    # Попытка воспроизведения несуществующего видео
+    ur.watch_video('Лучший язык программирования 2024 года!')
 
 
 
